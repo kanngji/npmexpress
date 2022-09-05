@@ -8,13 +8,14 @@ const app = express();
 const PORT = 4000;
 
 const userRouter = require('./routes/users');
-
-const postsRouter = express.Router();
+// 모듈 방식으로 posts.js를  라우팅
+const postsRouter = require('./routes/posts');
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use('/users', userRouter);
+// 모듈 방식으로 posts.js를  라우팅
 app.use('/posts', postsRouter);
 // css 문제 해결
 app.use(express.static('public'));
