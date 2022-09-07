@@ -1,18 +1,26 @@
 // @ts-check
 const express = require('express');
 
-const { link } = require('fs');
+// const { link } = require('fs');
+// const bodyParser = require('body-parser');
 
 const app = express();
 
 const PORT = 4000;
 
+// express 기본 기능이야!
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+const router = require('./routes/index');
 const userRouter = require('./routes/users');
 // 모듈 방식으로 posts.js를  라우팅
 const postsRouter = require('./routes/posts');
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
+
+app.use('/', router);
 
 app.use('/users', userRouter);
 // 모듈 방식으로 posts.js를  라우팅
@@ -53,7 +61,7 @@ app.use((err, req, res, next) => {
   // 서버 단
   console.log(err.stack);
   // 사용자 단
-  res.status(err.statusCode);
+  res.status(err.statusCode || 500);
   res.end(err.message);
 });
 
