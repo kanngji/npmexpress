@@ -16,6 +16,7 @@ const router = require('./routes/index');
 const userRouter = require('./routes/users');
 // 모듈 방식으로 posts.js를  라우팅
 const postsRouter = require('./routes/posts');
+const boardRouter = require('./routes/board');
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -25,7 +26,10 @@ app.use('/', router);
 app.use('/users', userRouter);
 // 모듈 방식으로 posts.js를  라우팅
 app.use('/posts', postsRouter);
+// board 모듈 방식으로 board.js를 라우팅
+app.use('/board', boardRouter);
 // css 문제 해결
+
 app.use(express.static('public'));
 // view 에서 없으면 js에서 찾아보렴
 
