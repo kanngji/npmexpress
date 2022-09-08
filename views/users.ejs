@@ -25,6 +25,7 @@
       <label>이메일</label>
       <input type="email" name="email" />
     </div>
+
     <button type="submit">제출</button>
   </form>
 
@@ -40,6 +41,7 @@
       <p>ID: <%= USER[i].id %></p>
       <p>이름: <%= USER[i].name %></p>
       <p>email: <%= USER[i].email %></p>
+      <a href="#" onclick="deleteUser('<%= USER[i].id %>');">삭제</a>
     </li>
     <% } %> <% } else { %>
     <li>회원 정보가 없습니다!</li>
@@ -47,5 +49,19 @@
   </ul>
   <img src="/images/<%= imgName%>" alt="나무늘보">
 </body>
+<script>
+  function deleteUser(id) {
+    fetch(`http://localhost:4000/users/${id}`, {
+      // header 라던지 method 
+      method: 'delete',
+      headers: {
+        'Content-type': 'application/json'
+      }
+    }).then((res) => {
+      console.log(res);
+      location.reload();
+    })
+  }
+</script>
 
 </html>

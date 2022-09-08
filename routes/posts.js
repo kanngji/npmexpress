@@ -34,15 +34,34 @@ router.get('/:title', (req, res) => {
 
 // 새로운 글 작성
 router.post('/', (req, res) => {
-  if (req.query.title && req.query.content) {
-    const newPost = {
-      title: req.query.title,
-      content: req.query.content,
-    };
-    POST.push(newPost);
-    res.send('게시글 등록 완료');
+  if (Object.keys(req.query).length >= 1) {
+    if (req.query.title && req.query.content) {
+      const newPost = {
+        title: req.query.title,
+        content: req.query.content,
+      };
+      POST.push(newPost);
+      res.redirect('/posts');
+    } else {
+      const err = new Error('게시글 등록이 되지 않았습니다');
+      err.statusCode = 404;
+      throw err;
+    }
+  } else if (req.body) {
+    if (req.body.title && req.body.content) {
+      const newPost = {
+        title: req.body.title,
+        content: req.body.content,
+      };
+      POST.push(newPost);
+      res.redirect('/posts');
+    } else {
+      const err = new Error('게시글 등록이 되지 않았습니다');
+      err.statusCode = 404;
+      throw err;
+    }
   } else {
-    const err = new Error('게시글 등록이 되지 않았습니다');
+    const err = new Error('No data');
     err.statusCode = 404;
     throw err;
   }
