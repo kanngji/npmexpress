@@ -19,7 +19,7 @@
       <p>title: <%= BOARD[i].title %></p>
       <p>content: <%= BOARD[i].content %></p>
       <a href="#" onclick="deleteBoard(`<%= BOARD[i].title %>`);">삭제</a>
-      <a href="#" onclick="modifyBoard(`<%= BOARD[i].title %>`);">수정</a>
+      <a href="board/modify" onclick="modifyBoard(`<%= BOARD[i].title %>`);">수정</a>
 
     </li>
     <% } %> <% } else { %>
@@ -43,6 +43,9 @@
   }
 
   // 수정 기능 함수하기
+  function modifyBoard(title) {
+
+  }
 </script>
 
 </html>

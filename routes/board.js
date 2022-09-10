@@ -22,40 +22,9 @@ router.get('/', (req, res) => {
   const boardLen = BOARD.length;
   res.render('board', { BOARD, boardCounts: boardLen });
 });
-router.get('/modify/:title', (req, res) => {
-  const boardData = BOARD.find((board) => board.title === req.params.title);
-  if (boardData) {
-    res.render('modify');
-  } else {
-    const err = new Error('해당하는 title이 없습니다');
-    err.statusCode = 404;
-    throw err;
-  }
-});
-router.put('/:title', (req, res) => {
-  // 일단 게시글 제목만 있으면 수정할수 있게
-  if (req.query.title) {
-    const boardData = BOARD.find((board) => board.title === req.params.title);
-    if (boardData) {
-      const arrIndex = BOARD.findIndex(
-        (board) => board.title === req.params.title
-      );
-      const modifyBoard = {
-        title: req.query.title,
-        content: req.query.content,
-      };
-      BOARD[arrIndex] = modifyBoard;
-      res.send('게시글 수정 완료');
-    } else {
-      const err = new Error('해당 게시글을 찾을 수 없습니다');
-      err.statusCode = 404;
-      throw err;
-    }
-  } else {
-    const err = new Error('게시글이 수정되기전 양식을 확인해주세요');
-    err.statusCode = 404;
-    throw err;
-  }
+router.get('/modify', (req, res) => {
+  // res.send('hi');
+  res.render('modify', { BOARD });
 });
 
 // 특정 title을 가진 글 삭제
