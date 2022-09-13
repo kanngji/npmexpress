@@ -11,6 +11,7 @@
 <body>
 
   <h1>글 목록</h1>
+  <a href="/board/write">글쓰기</a>
   <h2>총 글 수 <%= boardCounts %></h2>
   <ul>
     <% if(boardCounts> 0) { %>
@@ -19,7 +20,7 @@
       <p>title: <%= BOARD[i].title %></p>
       <p>content: <%= BOARD[i].content %></p>
       <a href="#" onclick="deleteBoard(`<%= BOARD[i].title %>`);">삭제</a>
-      <a href="board/modify" onclick="modifyBoard(`<%= BOARD[i].title %>`);">수정</a>
+      <a href="board/modify/<%=BOARD[i].title%>">수정</a>
 
     </li>
     <% } %> <% } else { %>
@@ -40,11 +41,6 @@
       console.log(res);
       location.reload();
     })
-  }
-
-  // 수정 기능 함수하기
-  function modifyBoard(title) {
-
   }
 </script>
 

@@ -22,9 +22,50 @@ router.get('/', (req, res) => {
   const boardLen = BOARD.length;
   res.render('board', { BOARD, boardCounts: boardLen });
 });
-router.get('/modify', (req, res) => {
-  // res.send('hi');
-  res.render('modify', { BOARD });
+router.get('/write', (req, res) => {
+  res.render('write');
+});
+router.post('/', (req, res) => {
+  if (Object.keys(req.query).length >= 1) {
+    if (req.query.title) {
+      const newBoardPost = {
+        title: req.query.title,
+        content: req.query.content,
+      };
+      BOARD.push(newBoardPost);
+      res.redirect('/');
+    } else {
+      const err = new Error('unexpected Query');
+      err.statusCode = 404;
+      throw err;
+    }
+  } else if (req.body) {
+    const arrIndex = BOARD.findIndex((board) => req.body.title === board.title);
+
+    if (req.body.title && req.body.content) {
+      const newBoardPost = {
+        title: req.body.title,
+        content: req.body.content,
+      };
+      BOARD.push(newBoardPost);
+      res.redirect('/');
+    } else if (req.body.title && req.body.content) {
+      const modiPost = {
+        title: req.body.title,
+        content: req.body.content,
+      };
+      BOARD[arrIndex] = modiPost;
+      res.redirect('/');
+    } else {
+      const err = new Error('unexpected form data');
+      err.statusCode = 404;
+      throw err;
+    }
+  } else {
+    const err = new Error('no data');
+    err.statusCode = 404;
+    throw err;
+  }
 });
 
 // 특정 title을 가진 글 삭제
@@ -38,6 +79,11 @@ router.delete('/:title', (req, res) => {
     err.statusCode = 404;
     throw err;
   }
+});
+
+router.get('/modify/:title', (req, res) => {
+  const arrIndex = BOARD.findIndex((board) => board.title === req.params.title);
+  res.render('modify', { BOARD, arrIndex });
 });
 
 module.exports = router;
