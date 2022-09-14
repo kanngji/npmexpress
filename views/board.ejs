@@ -20,7 +20,7 @@
       <p>title: <%= BOARD[i].title %></p>
       <p>content: <%= BOARD[i].content %></p>
       <a href="#" onclick="deleteBoard(`<%= BOARD[i].title %>`);">삭제</a>
-      <a href="board/modify/<%=BOARD[i].title%>">수정</a>
+      <a href="board/modify/title/<%=BOARD[i].title%>">수정</a>
 
     </li>
     <% } %> <% } else { %>
@@ -32,14 +32,14 @@
   console.log("얍");
   // 삭제 기능 함수
   function deleteBoard(title) {
-    fetch(`http://localhost:4000/board/${title}`, {
+    fetch(`board/delete/title/${title}`, {
       method: 'delete',
       headers: {
         'Content-type': 'application/json'
       }
     }).then((res) => {
       console.log(res);
-      location.reload();
+      location.href = '/board';
     })
   }
 </script>
