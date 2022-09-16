@@ -10,15 +10,27 @@ const router = express.Router();
 
 const mongoClient = require('./mongo');
 
-router.get('/', async (req, res) => {
-  // 글 전체 목록 보여주기
+function isLogin(req, res, next) {
+  if (req.session.login || req.user) {
+    next();
+  } else {
+    res.status(300);
+    res.send('로그인 해주세요.<br><a href="/login">로그인 페이지로 이동</a>');
+  }
+}
+
+router.get('/', isLogin, async (req, res) => {
   const client = await mongoClient.connect();
   const cursor = client.db('kdt1').collection('board');
   const BOARD = await cursor.find({}).toArray();
   const boardLen = BOARD.length;
-
-  res.render('board', { BOARD, boardCounts: boardLen });
+  res.render('board', {
+    BOARD,
+    boardCounts: boardLen,
+    userId: req.session.userId ? req.session.userId : req.user.id,
+  });
 });
+
 router.get('/write', (req, res) => {
   // 글 쓰기 모드로 이동
   res.render('write');
@@ -28,6 +40,7 @@ router.post('/write', async (req, res) => {
   // 글 추가 기능 수행
   if (req.body.title && req.body.content) {
     const newBoard = {
+      id: req.session.userId,
       title: req.body.title,
       content: req.body.content,
     };
@@ -87,7 +100,7 @@ router.post('/write', async (req, res) => {
   //   throw err;
   // }
 });
-router.get('/modify/title/:title', async (req, res) => {
+router.get('/modify/title/:title', isLogin, async (req, res) => {
   const client = await mongoClient.connect();
   const cursor = client.db('kdt1').collection('board');
   const selectedBoard = await cursor.findOne({
@@ -107,7 +120,7 @@ router.get('/modify/title/:title', async (req, res) => {
   // });
 });
 
-router.post('/modify/title/:title', async (req, res) => {
+router.post('/modify/title/:title', isLogin, async (req, res) => {
   // 글 수정 기능 수행
   if (req.body.title && req.body.content) {
     const client = await mongoClient.connect();
@@ -150,7 +163,7 @@ router.post('/modify/title/:title', async (req, res) => {
 });
 
 // 특정 title을 가진 글 삭제
-router.delete('/delete/title/:title', async (req, res) => {
+router.delete('/delete/title/:title', isLogin, async (req, res) => {
   // 글 삭제 기능 수행
   const client = await mongoClient.connect();
   const cursor = client.db('kdt1').collection('board');
