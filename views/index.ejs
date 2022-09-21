@@ -1,37 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<script>
-  console.log(document.cookie);
-  // document.cookie = "user=kdt; expires=15 sep 2022 13:00 GMT; path=/";
-  // document.cookie = "test=kdt; expires=15 sep 2022 13:00 GMT; path=/";
-  // consoel.log(document.cookie);
-
-  window.onload = () => {
-    if (document.cookie) {
-      alert(`프론트쿠키 팔아요! ${document.cookie}`);
-
-    }
-   
-  }
-</script>
-
-<body>
-  <h1>Hello, Express Service</h1>
-  <h2><a href="/users">Move to User service</a> </h2>
-  <h2><a href="/posts">Move to Post service</a></h2>
-  <h2><a href="/board">Move to board service</a></h2>
-
-</body>
-
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -68,38 +34,34 @@
 
   <div class="container mt-5">
     <h1 class="text-center">Hello, Express Service</h1>
-    <h2 class="mt-5 text-center"><a href="/register">회원가입 바로가기</a></h2>
+    <h2 class="mt-5 text-center"><a href="/register">회원 가입 바로가기</a></h2>
     <h2 class="mt-5 text-center"><a href="/login">로그인 바로가기</a></h2>
     <h2 class="mt-5 text-center"><a href="/board">게시판 바로가기</a></h2>
+    <h2 class="mt-5 text-center"><a href="/chat">채팅 바로가기</a></h2>
+    <h2 class="mt-5 text-center"><a href="/login/auth/naver">네이버 로그인 바로가기</a></h2>
+    <h2 class="mt-5 text-center"><a href="/login/auth/google">구글 로그인 바로가기</a></h2>
+    <h2 class="mt-5 text-center"><a href="/login/auth/kakao">카카오 로그인 바로가기</a></h2>
+
   </div>
 
   <script>
-    // const checkCookie = document.querySelector("#cookie");
     const myModal = new bootstrap.Modal('#exampleModal');
-    if ('<%= popup %>' !== 'hide') myModal.show();
-
+    console.log('<%= popup %>');
+    if ('<%= popup %>' === '') myModal.show();
 
     function modalClose() {
-      // 하루 동안 안보기 기능 구현하기
       if (document.getElementById("cookie").checked) {
         fetch('/cookie', {
           method: 'post',
           headers: {
-            'Content-Type': 'application/json'
-
+            'Content-type': 'application/json'
           },
-
         }).then((res) => {
-          consoel.log(res.data);
+          console.log(res.data);
         }).catch((err) => {
           console.log(err);
         })
-
       }
-      // fetch('cookie', {
-      //   method: 'post',
-
-      // })
       myModal.hide();
     }
   </script>

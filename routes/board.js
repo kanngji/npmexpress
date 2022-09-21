@@ -1,187 +1,104 @@
 // @ts-check
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri =
-  'mongodb+srv://kkangji:qwe123@kdt.u71doty.mongodb.net/?retryWrites=true&w=majority';
-// board 라우터로 들어갑니다
-
 const express = require('express');
 
-const router = express.Router();
+const multer = require('multer');
 
+const fs = require('fs');
+
+const router = express.Router();
+const login = require('./login');
 const mongoClient = require('./mongo');
 
-function isLogin(req, res, next) {
-  if (req.session.login || req.user) {
-    next();
-  } else {
-    res.status(300);
-    res.send('로그인 해주세요.<br><a href="/login">로그인 페이지로 이동</a>');
-  }
-}
+const dir = './uploads';
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '_' + Date.now());
+  },
+});
+// 한계 설정
+const limits = {
+  fileSize: 1024 * 1024 * 2, // 2mb까지 받겠다.
+};
 
-router.get('/', isLogin, async (req, res) => {
+const upload = multer({ storage, limits });
+
+router.get('/', login.isLogin, async (req, res) => {
+  console.log(req.user);
   const client = await mongoClient.connect();
   const cursor = client.db('kdt1').collection('board');
-  const BOARD = await cursor.find({}).toArray();
-  const boardLen = BOARD.length;
+  const ARTICLE = await cursor.find({}).toArray();
+  const articleLen = ARTICLE.length;
   res.render('board', {
-    BOARD,
-    boardCounts: boardLen,
-    userId: req.session.userId ? req.session.userId : req.user.id,
+    ARTICLE,
+    articleCounts: articleLen,
+    userId: req.session.userId
+      ? req.session.userId
+      : req.user?.id
+      ? req.user?.id
+      : req.signedCookies.user,
   });
 });
 
-router.get('/write', (req, res) => {
-  // 글 쓰기 모드로 이동
-  res.render('write');
-  // 미들 웨어 처리
+router.get('/write', login.isLogin, (req, res) => {
+  res.render('board_write');
 });
-router.post('/write', async (req, res) => {
-  // 글 추가 기능 수행
+
+router.post('/write', login.isLogin, upload.single('img'), async (req, res) => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  console.log(req.file);
   if (req.body.title && req.body.content) {
-    const newBoard = {
-      id: req.session.userId,
+    const newArticle = {
+      id: req.session.userId ? req.session.userId : req.user.id,
+      userName: req.user?.name ? req.user.name : req.user?.id,
       title: req.body.title,
       content: req.body.content,
+      img: req.file ? req.file.filename : null,
     };
+
     const client = await mongoClient.connect();
     const cursor = client.db('kdt1').collection('board');
-    await cursor.insertOne(newBoard);
+    await cursor.insertOne(newArticle);
     res.redirect('/board');
-    // MongoClient.connect(uri, (err, db) => {
-    //   const data = db.db('kdt1').collection('board');
-
-    //   data.insertOne(newBoard, (err, result) => {
-    //     res.redirect('/board');
-    //   });
-    // });
   } else {
-    const err = new Error('데이터가 없습니다.');
+    const err = new Error('데이터가 없습니다');
     err.statusCode = 404;
     throw err;
   }
-  // if (Object.keys(req.query).length >= 1) {
-  //   if (req.query.title) {
-  //     const newBoardPost = {
-  //       title: req.query.title,
-  //       content: req.query.content,
-  //     };
-  //     BOARD.push(newBoardPost);
-  //     res.redirect('/');
-  //   } else {
-  //     const err = new Error('unexpected Query');
-  //     err.statusCode = 404;
-  //     throw err;
-  //   }
-  // } else if (req.body) {
-  //   const arrIndex = BOARD.findIndex((board) => req.body.title === board.title);
-  //   if (req.body.title && req.body.content) {
-  //     const newBoardPost = {
-  //       title: req.body.title,
-  //       content: req.body.content,
-  //     };
-  //     BOARD.push(newBoardPost);
-  //     res.redirect('/');
-  //   } else if (req.body.title && req.body.content) {
-  //     const modiPost = {
-  //       title: req.body.title,
-  //       content: req.body.content,
-  //     };
-  //     BOARD[arrIndex] = modiPost;
-  //     res.redirect('/');
-  //   } else {
-  //     const err = new Error('unexpected form data');
-  //     err.statusCode = 404;
-  //     throw err;
-  //   }
-  // } else {
-  //   const err = new Error('no data');
-  //   err.statusCode = 404;
-  //   throw err;
-  // }
-});
-router.get('/modify/title/:title', isLogin, async (req, res) => {
-  const client = await mongoClient.connect();
-  const cursor = client.db('kdt1').collection('board');
-  const selectedBoard = await cursor.findOne({
-    title: req.params.title,
-  });
-  res.render('modify', { selectedBoard });
-  // 글 수정 모드로 이동
-  // MongoClient.connect(uri, (err, db) => {
-  //   const data = db.db('kdt1').collection('board');
-  //   data.findOne({ title: req.params.title }, (err, result) => {
-  //     if (err) {
-  //       throw err;
-  //     } else {
-  //       const selectedBoard = result;
-  //     }
-  //   });
-  // });
 });
 
-router.post('/modify/title/:title', isLogin, async (req, res) => {
-  // 글 수정 기능 수행
+router.get('/modify/title/:title', login.isLogin, async (req, res) => {
+  const client = await mongoClient.connect();
+  const cursor = client.db('kdt1').collection('board');
+  const selectedArticle = await cursor.findOne({ title: req.params.title });
+  res.render('board_modify', { selectedArticle });
+});
+
+router.post('/modify/title/:title', login.isLogin, async (req, res) => {
   if (req.body.title && req.body.content) {
     const client = await mongoClient.connect();
     const cursor = client.db('kdt1').collection('board');
     await cursor.updateOne(
       { title: req.params.title },
-      {
-        $set: {
-          title: req.body.title,
-          content: req.body.content,
-        },
-      }
+      { $set: { title: req.body.title, content: req.body.content } }
     );
     res.redirect('/board');
-    // MongoClient.connect(uri, (err, db) => {
-    //   const data = db.db('kdt1').collection('board');
-
-    //   data.updateOne(
-    // { title: req.params.title },
-    // {
-    //   $set: {
-    //     title: req.body.title,
-    //     content: req.body.content,
-    //   },
-    // },
-    //     (err, result) => {
-    //       if (err) {
-    //         throw err;
-    //       } else {
-    //         res.redirect('/board');
-    //       }
-    //     }
-    //   );
-    // });
   } else {
-    const err = new Error('요청 값이 없습니다');
+    const err = new Error('요청 값이 없습니다.');
     err.statusCode = 404;
     throw err;
   }
 });
 
-// 특정 title을 가진 글 삭제
-router.delete('/delete/title/:title', isLogin, async (req, res) => {
-  // 글 삭제 기능 수행
+router.delete('/delete/title/:title', login.isLogin, async (req, res) => {
   const client = await mongoClient.connect();
   const cursor = client.db('kdt1').collection('board');
   const result = await cursor.deleteOne({ title: req.params.title });
-  //res.redirect('/board');
-  // MongoClient.connect(uri, (err, db) => {
-  //   const data = db.db('kdt1').collection('board');
 
-  //   data.deleteOne({ title: req.params.title }, (err, result) => {
-  //     if (err) {
-  //       res.end('해당 데이터가 없습니다');
-  //     } else {
-  //       res.send('삭제 완료');
-  //     }
-  //   });
-  // });
   if (result.acknowledged) {
-    res.send('삭제완료');
+    res.send('삭제 완료');
   } else {
     const err = new Error('삭제 실패');
     err.statusCode = 404;
